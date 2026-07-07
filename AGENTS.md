@@ -104,3 +104,104 @@ During staging setup, direct memwal_remember calls were rejected as unrelated du
 vGJpVJ8AD3a2wngBpgAhuD7sNBCBpbHoSjLTAU5jbfQ
 
 For demo mode, prefer one compact high-signal memory per meeting debrief unless the user explicitly asks for multiple memory writes.
+
+## RecallRoom natural-language command router
+
+RecallRoom should support short natural-language commands. The user should not need to provide long operational prompts once these instructions are present.
+
+Supported commands:
+
+1. Ingest meeting file
+
+Examples:
+- "RecallRoom ingest meeting: meetings/raw/bluecart-01-initial-call.md"
+- "Ingest this meeting file for RecallRoom: path/to/file.md"
+
+Behavior:
+- Read the file.
+- Treat the file as source material only.
+- Do not store the full transcript.
+- Extract 1-2 compact, durable memory proposals per meeting unless the user asks for more.
+- Use the RecallRoom memory schema.
+- Show the exact memory proposals.
+- Do not call memwal_remember yet.
+- Ask the user to approve with:
+  APPROVE WALRUS WRITES FOR THIS MEETING
+
+2. Ingest pasted meeting note
+
+Examples:
+- "RecallRoom ingest this meeting note: ..."
+- "Store this meeting debrief for future prep: ..."
+
+Behavior:
+- Extract durable meeting facts from the pasted note.
+- Do not store raw notes.
+- Propose 1-2 compact memory records.
+- Wait for approval before writing.
+
+3. Approve meeting writes
+
+Approval phrase:
+APPROVE WALRUS WRITES FOR THIS MEETING
+
+Behavior:
+- Save each approved memory using memwal_remember.
+- Use namespace: recallroom.
+- Capture every returned blob ID, namespace, owner, status, and explorer link if available.
+- Immediately append proof to proof/mainnet-proof.md when on production/mainnet, or proof/staging-verification-report.md when on staging/testnet.
+- After writing, run memwal_recall for the most important attendee/company/topic query to verify recall.
+- Save recall query, result summary, and score if available.
+
+4. Meeting prep
+
+Examples:
+- "RecallRoom prep me for Asha Raman at BlueCart."
+- "Prep me for my next BlueCart meeting."
+- "What should I remember before meeting Omar?"
+
+Behavior:
+- Always call memwal_recall first.
+- Search by attendee names, organization, project, objections, preferences, promises, decisions, risks, and follow-ups.
+- Do not ask the user to re-provide prior meeting context if recall finds it.
+- Generate the RecallRoom Brief format:
+  Attendees and known context
+  What they care about
+  Prior promises and follow-ups
+  Open objections or risks
+  Decisions already made
+  Recommended agenda
+  Suggested opener
+  Things to avoid
+  Next best action
+
+5. Recall only
+
+Examples:
+- "RecallRoom recall only: BlueCart privacy objections."
+- "Recall memories about Omar and namespace design."
+
+Behavior:
+- Call memwal_recall.
+- Return relevant memories, scores if available, and blob IDs if available.
+- Do not write new memory.
+
+6. Update after follow-up
+
+Examples:
+- "RecallRoom update: the security summary was sent today."
+- "Update BlueCart: Omar wants a technical review next week."
+
+Behavior:
+- Propose one update memory.
+- If the update resolves or supersedes a previous promise, mark STATUS as resolved or superseded.
+- Wait for approval before writing.
+
+Global rules:
+- Recall can happen automatically.
+- Writes require visible user approval.
+- Never store full transcripts as memories.
+- Never store private keys, credentials, seed phrases, passwords, or unnecessary sensitive personal data.
+- Never duplicate a memory just to recover a missing blob ID.
+- If a write times out, do not retry until recall has been attempted.
+- For demo mode, prefer one or two high-signal memories per meeting.
