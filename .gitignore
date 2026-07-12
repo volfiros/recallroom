@@ -1,0 +1,35 @@
+.DS_Store
+
+# Local environment and credentials
+.env
+.env.*
+!.env.example
+credentials.json
+*.key
+*.pem
+*.p12
+*.pfx
+*private*wallet*
+*wallet*.json
+
+# Dependencies and caches
+node_modules/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local agent/client configuration
+.codex/
+.claude/
+.cursor/
+.mcp.json
+
+# Logs, temporary exports, and video captures
+*.log
+debug-*.txt
+tmp/
+temp/
+*.mov
+*.mp4
+*.webm
+*.mkv
